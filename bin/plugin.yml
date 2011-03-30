@@ -1,0 +1,9 @@
+name: BukkitSpells
+main: com.bukkit.Dgco.BukkitSpells.BukkitSpells
+version: 0.0.0.1
+author: Dgco
+description: Casts Stuff
+commands:
+   cast:
+      description: Casts a inventory clearing spell.
+      usage: |
