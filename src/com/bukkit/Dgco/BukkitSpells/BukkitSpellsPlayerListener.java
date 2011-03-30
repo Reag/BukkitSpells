@@ -65,11 +65,42 @@ public class BukkitSpellsPlayerListener extends PlayerListener
  					//spell worked if here :D
  				}
  			}
+ 			
+ 			if(args.length >0 && args[0].equalsIgnoreCase("mark"))
+ 			{
+ 				setPlayerMark( ((Player) sender), ((Player) sender).getLocation());
+ 			}
+ 			
+ 			if(args.length >0 && args[0].equalsIgnoreCase("recall"))
+ 			{
+ 				return castRecall((Player) sender);
+ 			}
  			return true;
  		}
  		return false;
     }
  	
+    public boolean castRecall(Player player)
+    {
+    	if(canCastSpell(player,"Recall"))
+    	{
+    		
+    		if (60 > 0 && isOnCooldown(player,"Recall",100)) {
+    			player.sendMessage("Spell Is On Cooldown");
+    			return false;
+    		} else if (!removeRegents(player,getSpellCost("Recall"))) {
+    			player.sendMessage("No Regents");
+    			return false;
+    		} else {
+    			Location loc = getPlayerMark(player);
+    			player.teleport(loc);
+    			startCooldown(player,"Recall",100);
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
     
     private boolean castCost(CommandSender sender, Command command,
 			String[] args) {
@@ -129,7 +160,7 @@ public class BukkitSpellsPlayerListener extends PlayerListener
     
     
     
-   // @SuppressWarnings("unused")
+    @SuppressWarnings("unused")
 	public boolean castBlink(CommandSender sender,Command command,String[] args)
     {
     	Player player = (Player) sender;
@@ -299,7 +330,7 @@ public class BukkitSpellsPlayerListener extends PlayerListener
     {
     	
     }
-    public Location getPLayerMark(Player player)
+    public Location getPlayerMark(Player player)
     {
     	return new Location(plugin.getServer().getWorld("world"),101,68,88);
     }
