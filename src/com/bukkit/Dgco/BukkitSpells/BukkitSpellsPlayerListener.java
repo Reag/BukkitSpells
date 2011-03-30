@@ -33,12 +33,12 @@ import org.bukkit.*;
 public class BukkitSpellsPlayerListener extends PlayerListener 
 {
     private final BukkitSpells plugin;
-    protected HashMap<String,Long> LastBlinkCast;
+    protected HashMap<String,Long> lastcast;
 
     public BukkitSpellsPlayerListener(BukkitSpells instance) 
     {
         plugin = instance;
-        LastBlinkCast = new HashMap<String,Long>();
+        lastcast = new HashMap<String,Long>();
     }
     
     public boolean onPlayerCommand(CommandSender  sender,  
@@ -147,7 +147,7 @@ public class BukkitSpellsPlayerListener extends PlayerListener
     		} else if (80 > 0 && getDistance(player,target) > 80) {
     			player.sendMessage("Too Far To Blink b");
     			return false;
-    		} else if (60 > 0 && isOnCooldown(player,"Blink",60)) {
+    		} else if (60 > 0 && isOnCooldown(player,"Blink",10)) {
     			player.sendMessage("Spell Is On Cooldown");
     			return false;
     		}  else if (player.getWorld().getBlockTypeIdAt(target.getX(),target.getY()+1,target.getZ()) == 0 && player.getWorld().getBlockTypeIdAt(target.getX(),target.getY()+2,target.getZ()) == 0) {
@@ -160,7 +160,7 @@ public class BukkitSpellsPlayerListener extends PlayerListener
     		//	sendMessageToPlayersInRange(player,STR_CAST_OTHERS.replace("[caster]",player.getName()));
     			player.teleport(new Location(player.getWorld(), target.getX()+.5, (double)target.getY()+1, target.getZ()+.5 ,player.getEyeLocation().getYaw(), player.getEyeLocation().getPitch()  ));
     			//if (COOLDOWN > 0) {
-    			//	startCooldown(player);
+    				startCooldown(player,"Blink",10);
     			//}
     			return true;
     		} else if (target.getTypeId() == 0 && player.getWorld().getBlockTypeIdAt(face.getModX(),face.getModY()+1,face.getModZ()) == 0) {
@@ -173,7 +173,7 @@ public class BukkitSpellsPlayerListener extends PlayerListener
     			//sendMessageToPlayersInRange(player,STR_CAST_OTHERS.replace("[caster]",player.getName()));
     			player.teleport(new Location(player.getWorld(),face.getModX()+.5,(double)face.getModY(),face.getModZ()+.5,player.getEyeLocation().getYaw(), player.getEyeLocation().getPitch()));
     			//if (COOLDOWN > 0) {
-    			//	startCooldown(player);
+    				startCooldown(player,"Blink",10);
     			//}
     			return true;
     		} else {
@@ -189,9 +189,27 @@ public class BukkitSpellsPlayerListener extends PlayerListener
     }
     
     
-    
-    private boolean isOnCooldown(Player player, String spellname, int cooldowntime) {
-		return false;
+    private void startCooldown(Player player, String spellname, int cooldowntime)
+    {
+    	String str = player.getName()+spellname;
+    	if(!lastcast.containsKey(str))
+    	{
+    		lastcast.put(str, System.currentTimeMillis());
+    	}
+    }
+    private boolean isOnCooldown(Player player, String spellname, int cooldown) {
+		if (lastcast == null) {
+			return false;
+		}/* else if (player.isInGroup(FREE_SPELL_RANK)) {
+			return false;
+		}*/ else if (!lastcast.containsKey(player.getName()+spellname)) {
+			return false;
+		} else if (System.currentTimeMillis() - lastcast.get(player.getName()+spellname) > cooldown*1000) {
+			lastcast.remove(player.getName()+spellname);
+			return false;
+		} else {
+			return true;
+		}
 	}
     
     private boolean removeRegents(Player player, int[] regents)
